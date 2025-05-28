@@ -1,103 +1,175 @@
-import Image from "next/image";
+'use client'
+
+import { useEffect } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { TextPlugin } from 'gsap/TextPlugin'
+import { MotionPathPlugin } from 'gsap/MotionPathPlugin'
+import HeroSection from '../app/components/HeroSection'
+import StatsSection from '../app/components/StatsSection'
+import ServicesShowcase from '../app/components/ServicesShowcase'
+import LuxuryFeatures from '../app/components/LuxuryFeatures'
+import TestimonialsCarousel from '../app/components/TestimonialsCarousel'
+import LocationSection from '../app/components/LocationSection'
+import BookingCTA from '../app/components/BookingCta'
+import ParallaxBackground from './components/animations/ParallaxBackground'
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, TextPlugin, MotionPathPlugin)
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  useEffect(() => {
+    // Initialize scroll-triggered animations
+    const ctx = gsap.context(() => {
+      // Page load sequence
+      const tl = gsap.timeline()
+      
+      tl.from('.page-loader', {
+        duration: 0.8,
+        opacity: 1,
+        ease: 'power2.out'
+      })
+      .set('.page-loader', { display: 'none' })
+      .from('.main-content', {
+        duration: 1.2,
+        y: 50,
+        opacity: 0,
+        ease: 'power3.out'
+      })
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+      // Scroll-triggered fade and slide animations
+      gsap.utils.toArray('.fade-slide-up').forEach((element) => {
+        gsap.fromTo(element, 
+          {
+            y: 100,
+            opacity: 0
+          },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: element,
+              start: 'top 80%',
+              end: 'bottom 20%',
+              toggleActions: 'play none none reverse'
+            }
+          }
+        )
+      })
+
+      // Staggered animations for card groups
+      gsap.utils.toArray('.stagger-group').forEach((group) => {
+        const children = group.children
+        gsap.fromTo(children,
+          {
+            y: 80,
+            opacity: 0,
+            scale: 0.8
+          },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'back.out(1.7)',
+            scrollTrigger: {
+              trigger: group,
+              start: 'top 75%',
+              end: 'bottom 25%',
+              toggleActions: 'play none none reverse'
+            }
+          }
+        )
+      })
+
+      // Pinned sections with scroll-linked content
+      gsap.utils.toArray('.pinned-section').forEach((section) => {
+        const content = section.querySelector('.scroll-content')
+        if (content) {
+          ScrollTrigger.create({
+            trigger: section,
+            start: 'top top',
+            end: 'bottom top',
+            pin: true,
+            onUpdate: (self) => {
+              gsap.to(content, {
+                y: -self.progress * 100,
+                duration: 0.3,
+                ease: 'none'
+              })
+            }
+          })
+        }
+      })
+
+      // Text reveal animations
+      gsap.utils.toArray('.text-reveal').forEach((text) => {
+        const chars = text.textContent.split('')
+        text.innerHTML = chars.map(char => 
+          char === ' ' ? ' ' : `<span class="char">${char}</span>`
+        ).join('')
+        
+        gsap.fromTo(text.querySelectorAll('.char'),
+          {
+            y: 100,
+            opacity: 0,
+            rotateX: -90
+          },
+          {
+            y: 0,
+            opacity: 1,
+            rotateX: 0,
+            duration: 0.5,
+            stagger: 0.02,
+            ease: 'back.out(1.7)',
+            scrollTrigger: {
+              trigger: text,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse'
+            }
+          }
+        )
+      })
+
+      // Gradient background animation
+      gsap.to('.gradient-bg', {
+        backgroundPosition: '200% 50%',
+        duration: 8,
+        ease: 'none',
+        repeat: -1,
+        yoyo: true
+      })
+
+    })
+
+    return () => ctx.revert()
+  }, [])
+
+  return (
+    <>
+      {/* Page Loader */}
+      <div className="page-loader fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="w-16 h-16 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+      </div>
+
+      {/* Parallax Background */}
+      <ParallaxBackground />
+
+      {/* Main Content */}
+      <main className="main-content relative z-10">
+        <HeroSection />
+        <StatsSection />
+        <ServicesShowcase />
+        <LuxuryFeatures />
+        <TestimonialsCarousel />
+        <LocationSection />
+        <BookingCTA />
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    </>
+  )
 }
