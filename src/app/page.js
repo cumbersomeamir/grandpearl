@@ -13,6 +13,7 @@ import TestimonialsCarousel from '../app/components/TestimonialsCarousel'
 import LocationSection from '../app/components/LocationSection'
 import BookingCTA from '../app/components/BookingCta'
 import ParallaxBackground from './components/animations/ParallaxBackground'
+import WhatsappButton from '../app/components/WhatsappButton'
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -170,6 +171,7 @@ export default function Home() {
         <LocationSection />
         <BookingCTA />
       </main>
+      <WhatsappButton />
     </>
   )
 }
