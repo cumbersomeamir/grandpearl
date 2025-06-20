@@ -1,8 +1,11 @@
 import { MongoClient } from 'mongodb'
 
-const uri = process.env.MONGODB_URI || 'mongodb+srv://amir:YOUR_PASSWORD@grandpearl.qvl62it.mongodb.net/'
+const uri = process.env.MONGODB_URI
+
 if (!uri) {
-  throw new Error('Missing MONGODB_URI environment variable')
+  throw new Error(
+    'Missing MONGODB_URI environment variable. Set it in a .env.local file.'
+  )
 }
 
 let client
