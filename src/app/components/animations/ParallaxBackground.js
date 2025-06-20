@@ -57,7 +57,7 @@ export default function ParallaxBackground() {
         <svg className="w-full h-full" viewBox="0 0 1200 800">
           <defs>
             <pattern id="bg-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-              <circle cx="50" cy="50" r="1" fill="#D4AF37" opacity="0.3" />
+              <circle cx="50" cy="50" r="1" fill="#d3af37" opacity="0.3" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#bg-pattern)" />

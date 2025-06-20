@@ -188,7 +188,7 @@ export default function LocationSection() {
       <svg className="absolute inset-0 w-full h-full opacity-10 pointer-events-none">
         <path
           d="M0,400 Q300,200 600,400 Q900,600 1200,400"
-          stroke="#D4AF37"
+          stroke="#d3af37"
           strokeWidth="2"
           fill="none"
           strokeDasharray="10,5"

@@ -117,16 +117,16 @@ export default function HeroSection() {
         <svg className="w-full h-full" viewBox="0 0 1200 800">
           <defs>
             <pattern id="luxury-pattern" x="0" y="0" width="300" height="300" patternUnits="userSpaceOnUse">
-              <circle cx="150" cy="150" r="3" fill="#D4AF37" opacity="0.4">
+              <circle cx="150" cy="150" r="3" fill="#d3af37" opacity="0.4">
                 <animate attributeName="opacity" values="0.4;0.9;0.4" dur="6s" repeatCount="indefinite" />
               </circle>
-              <circle cx="75" cy="75" r="2" fill="#D4AF37" opacity="0.6">
+              <circle cx="75" cy="75" r="2" fill="#d3af37" opacity="0.6">
                 <animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite" />
               </circle>
               <circle cx="225" cy="225" r="2.5" fill="#C49E3B" opacity="0.5">
                 <animate attributeName="opacity" values="0.5;0.95;0.5" dur="8s" repeatCount="indefinite" />
               </circle>
-              <path d="M100,100 L200,100 L150,200 Z" fill="none" stroke="#D4AF37" strokeWidth="0.5" opacity="0.3">
+              <path d="M100,100 L200,100 L150,200 Z" fill="none" stroke="#d3af37" strokeWidth="0.5" opacity="0.3">
                 <animate attributeName="opacity" values="0.3;0.7;0.3" dur="5s" repeatCount="indefinite" />
               </path>
             </pattern>
