@@ -104,6 +104,29 @@ export default function GalleryPage() {
     return () => ctx.revert()
   }, [])
 
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const res = await fetch('/api/gallery')
+        if (res.ok) {
+          const data = await res.json()
+          const items = data.map(item => ({
+            id: item._id,
+            type: item.type,
+            src: item.src,
+            title: item.title,
+            category: item.category,
+            description: item.description
+          }))
+          setGalleryItems(prev => [...items, ...prev])
+        }
+      } catch (err) {
+        console.error('Failed to load gallery items', err)
+      }
+    }
+    fetchGallery()
+  }, [])
+
   const handleLogin = (credentials) => {
     // Simple login logic (in production, use proper authentication)
     if (credentials.username === 'admin' && credentials.password === 'grandpearl2024') {
@@ -139,17 +162,46 @@ export default function GalleryPage() {
     setShowUploadModal(false)
   }
 
-  const handleUpload = (files) => {
-    const newItems = files.map((file, index) => ({
-      id: Date.now() + index,
-      type: file.type.startsWith('video/') ? 'video' : 'image',
-      src: URL.createObjectURL(file),
-      title: file.name.split('.')[0],
-      category: 'uploaded',
-      description: `Uploaded ${file.type.startsWith('video/') ? 'video' : 'image'}`
-    }))
+  const handleUpload = async (files) => {
+    if (!files || files.length === 0) return
 
-    setGalleryItems(prev => [...newItems, ...prev])
+    const fileData = await Promise.all(
+      files.map(file => new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve({
+          type: file.type.startsWith('video/') ? 'video' : 'image',
+          src: reader.result,
+          title: file.name.split('.')[0],
+          category: 'uploaded',
+          description: `Uploaded ${file.type.startsWith('video/') ? 'video' : 'image'}`
+        })
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      }))
+    )
+
+    try {
+      const res = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: fileData })
+      })
+      if (res.ok) {
+        const saved = await res.json()
+        const newItems = saved.map(item => ({
+          id: item._id,
+          type: item.type,
+          src: item.src,
+          title: item.title,
+          category: item.category,
+          description: item.description
+        }))
+        setGalleryItems(prev => [...newItems, ...prev])
+      }
+    } catch (err) {
+      console.error('Upload failed', err)
+    }
+
     setShowUploadModal(false)
 
     // Upload success animation
