@@ -71,7 +71,7 @@ export default function BookingCTA() {
             ease: 'power2.out'
           })
           gsap.to(label, {
-            color: '#D4AF37',
+            color: '#d3af37',
             scale: 0.9,
             y: -10,
             duration: 0.3,
@@ -194,9 +194,9 @@ export default function BookingCTA() {
         <svg className="w-full h-full" viewBox="0 0 1200 800">
           <defs>
             <pattern id="booking-pattern" x="0" y="0" width="150" height="150" patternUnits="userSpaceOnUse">
-              <rect x="70" y="70" width="10" height="10" fill="#D4AF37" opacity="0.3" />
-              <circle cx="75" cy="25" r="3" fill="#D4AF37" opacity="0.4" />
-              <circle cx="25" cy="75" r="2" fill="#D4AF37" opacity="0.5" />
+              <rect x="70" y="70" width="10" height="10" fill="#d3af37" opacity="0.3" />
+              <circle cx="75" cy="25" r="3" fill="#d3af37" opacity="0.4" />
+              <circle cx="25" cy="75" r="2" fill="#d3af37" opacity="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#booking-pattern)" />

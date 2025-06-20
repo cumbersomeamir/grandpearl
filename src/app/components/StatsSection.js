@@ -41,7 +41,7 @@ export default function StatsSection() {
             ease: 'back.out(1.4)' 
           })
           gsap.to([number, label], {
-            color: '#D4AF37',
+            color: '#d3af37',
             textShadow: '0 0 20px rgba(212, 175, 55, 0.5)',
             duration: 0.4,
             ease: 'power2.out'
@@ -75,7 +75,7 @@ export default function StatsSection() {
             ease: 'power2.out'
           })
           gsap.to(label, {
-            color: '#D4AF37',
+            color: '#d3af37',
             textShadow: 'none',
             duration: 0.4,
             ease: 'power2.out'
