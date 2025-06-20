@@ -159,10 +159,9 @@ export default function BookingCTA() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // Form submission animation
+
     gsap.to('.submit-btn', {
       scale: 0.95,
       duration: 0.1,
@@ -171,15 +170,35 @@ export default function BookingCTA() {
       ease: 'power2.inOut'
     })
 
-    // Simulate form submission
-    setTimeout(() => {
-      gsap.to('.form-success', {
-        opacity: 1,
-        y: 0,
-        duration: 0.5,
-        ease: 'back.out(1.7)'
+    try {
+      const res = await fetch('/api/reservation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       })
-    }, 1000)
+
+      if (res.ok) {
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          service: '',
+          checkIn: '',
+          checkOut: '',
+          guests: '',
+          message: ''
+        })
+
+        gsap.to('.form-success', {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        })
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
@@ -301,6 +320,7 @@ export default function BookingCTA() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      minLength={2}
                       className="w-full pt-8 pb-3 px-4 bg-midnight/50 border border-gold/20 rounded-xl text-white focus:border-gold focus:outline-none transition-colors duration-300"
                       required
                     />
@@ -331,6 +351,7 @@ export default function BookingCTA() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
+                      pattern="[0-9+()\s-]{7,15}"
                       className="w-full pt-8 pb-3 px-4 bg-midnight/50 border border-gold/20 rounded-xl text-white focus:border-gold focus:outline-none transition-colors duration-300"
                       required
                     />
