@@ -29,7 +29,7 @@ export default function ServicesShowcase() {
         '24/7 room service',
         'Daily housekeeping'
       ],
-      price: 'Starting ₹4,999/night',
+      price: 'Starting ₹1,999/night',
       icon: '🏨',
       image: '/api/placeholder/600/400',
       stats: { rooms: 45, rating: 4.8, guests: '10,000+' }
@@ -47,16 +47,16 @@ export default function ServicesShowcase() {
         'Professional event planning',
         'Audio-visual equipment'
       ],
-      price: 'Starting ₹2,50,000/event',
+      price: 'Starting ₹1,49,000/event',
       icon: '🎉',
       image: '/api/placeholder/600/400',
       stats: { events: 1250, capacity: 500, satisfaction: '98%' }
     },
     {
       id: 3,
-      title: 'Fine Dining',
+      title: 'Rooftop Events',
       subtitle: 'Restaurant & Cloud Kitchen',
-      description: 'Indulge in exquisite culinary experiences with our multi-cuisine restaurant, cloud kitchen services, and premium catering options.',
+      description: 'Indulge in exquisite culinary experiences with our exotic rooftop event space',
       features: [
         'Multi-cuisine restaurant',
         'Cloud kitchen services',
@@ -74,11 +74,9 @@ export default function ServicesShowcase() {
       id: 4,
       title: 'Premium Amenities',
       subtitle: 'Luxury Facilities',
-      description: 'Enjoy our comprehensive range of luxury amenities including bar, terrace, garden, indoor games, and premium transportation services.',
+      description: 'Enjoy our comprehensive range of luxury amenities including terrace, garden, indoor games, and premium transportation services.',
       features: [
-        'On-site premium bar',
-        'Rooftop terrace & garden',
-        'Indoor gaming lounge',
+        'Rooftop terrace',
         'Bonfire & fireplace areas',
         'Airport shuttle service',
         'Concierge services'

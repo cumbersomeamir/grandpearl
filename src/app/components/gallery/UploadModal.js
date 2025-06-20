@@ -3,11 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 
-export default function UploadModal({ onClose, onUpload }) {
+export default function UploadModal({ onClose, onUpload, uploading }) {
   const modalRef = useRef(null)
   const [dragActive, setDragActive] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState([])
-  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -38,6 +37,8 @@ export default function UploadModal({ onClose, onUpload }) {
   }, [])
 
   const handleClose = () => {
+    if (uploading) return // Prevent closing during upload
+    
     // Exit animation
     gsap.to('.upload-modal-content', {
       scale: 0.8,
@@ -122,15 +123,10 @@ export default function UploadModal({ onClose, onUpload }) {
   }
 
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) return
+    if (selectedFiles.length === 0 || uploading) return
     
-    setUploading(true)
-    
-    // Simulate upload delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    onUpload(selectedFiles)
-    setUploading(false)
+    await onUpload(selectedFiles)
+    setSelectedFiles([]) // Clear selected files after upload
   }
 
   const formatFileSize = (bytes) => {
@@ -139,6 +135,10 @@ export default function UploadModal({ onClose, onUpload }) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  const getTotalSize = () => {
+    return selectedFiles.reduce((total, file) => total + file.size, 0)
   }
 
   return (
@@ -152,14 +152,16 @@ export default function UploadModal({ onClose, onUpload }) {
       {/* Modal Content */}
       <div className="upload-modal-content relative bg-gradient-to-br from-charcoal to-midnight rounded-3xl border-2 border-gold/30 shadow-2xl shadow-gold/10 p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Close Button */}
-        <button
-          onClick={handleClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gold transition-colors duration-300"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {!uploading && (
+          <button
+            onClick={handleClose}
+            className="absolute top-6 right-6 text-gray-400 hover:text-gold transition-colors duration-300"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -168,9 +170,20 @@ export default function UploadModal({ onClose, onUpload }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-white font-cormorant mb-2">Upload Media</h2>
-          <p className="text-gray-400 font-light">Add images and videos to the gallery</p>
+          <h2 className="text-3xl font-bold text-white font-cormorant mb-2">Upload to AWS S3</h2>
+          <p className="text-gray-400 font-light">Add images and videos to the gallery permanently</p>
         </div>
+
+        {/* Upload Status */}
+        {uploading && (
+          <div className="mb-6 bg-blue-500/20 border border-blue-500 rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-blue-400 font-semibold">Uploading to AWS S3...</span>
+            </div>
+            <p className="text-gray-300 text-sm">Please wait while your files are being uploaded and processed</p>
+          </div>
+        )}
 
         {/* Upload Area */}
         <div
@@ -178,21 +191,21 @@ export default function UploadModal({ onClose, onUpload }) {
             dragActive 
               ? 'border-gold bg-gold/10' 
               : 'border-gold/30 hover:border-gold/50 hover:bg-gold/5'
-          }`}
+          } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          onClick={() => document.getElementById('file-upload').click()}
+          onClick={() => !uploading && document.getElementById('file-upload').click()}
         >
           <div className="space-y-4">
-            <div className="text-6xl text-gold/60">📎</div>
+            <div className="text-6xl text-gold/60">☁️</div>
             <div>
               <h3 className="text-xl font-bold text-white font-cormorant mb-2">
-                Drag & Drop Media Files
+                Upload to AWS S3 Cloud
               </h3>
               <p className="text-gray-400 mb-4">
-                Or click anywhere in this area to browse files
+                Drag & drop files or click anywhere to browse
               </p>
               <input
                 type="file"
@@ -201,10 +214,9 @@ export default function UploadModal({ onClose, onUpload }) {
                 onChange={handleFileSelect}
                 className="hidden"
                 id="file-upload"
+                disabled={uploading}
               />
-              <div
-                className="inline-block px-8 py-4 bg-gradient-to-r from-gold to-antique-gold text-black font-bold rounded-full cursor-pointer hover:scale-105 transition-transform duration-300 shadow-lg shadow-gold/30"
-              >
+              <div className="inline-block px-8 py-4 bg-gradient-to-r from-gold to-antique-gold text-black font-bold rounded-full cursor-pointer hover:scale-105 transition-transform duration-300 shadow-lg shadow-gold/30">
                 <span className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -222,8 +234,9 @@ export default function UploadModal({ onClose, onUpload }) {
         {/* Selected Files */}
         {selectedFiles.length > 0 && (
           <div className="mt-8">
-            <h3 className="text-lg font-bold text-white font-cormorant mb-4">
-              Selected Files ({selectedFiles.length})
+            <h3 className="text-lg font-bold text-white font-cormorant mb-4 flex items-center justify-between">
+              <span>Selected Files ({selectedFiles.length})</span>
+              <span className="text-sm text-gray-400">Total: {formatFileSize(getTotalSize())}</span>
             </h3>
             <div className="space-y-3 max-h-60 overflow-y-auto">
               {selectedFiles.map((file, index) => (
@@ -237,18 +250,20 @@ export default function UploadModal({ onClose, onUpload }) {
                         {file.name}
                       </div>
                       <div className="text-gray-400 text-sm">
-                        {formatFileSize(file.size)}
+                        {formatFileSize(file.size)} • {file.type}
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeFile(index)}
-                    className="text-red-400 hover:text-red-300 transition-colors duration-300"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  {!uploading && (
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-red-400 hover:text-red-300 transition-colors duration-300"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -259,9 +274,10 @@ export default function UploadModal({ onClose, onUpload }) {
         <div className="mt-8 flex gap-4">
           <button
             onClick={handleClose}
-            className="flex-1 py-4 border-2 border-gold/30 text-gray-300 font-semibold rounded-xl hover:border-gold/50 hover:text-gold transition-all duration-300"
+            disabled={uploading}
+            className="flex-1 py-4 border-2 border-gold/30 text-gray-300 font-semibold rounded-xl hover:border-gold/50 hover:text-gold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Cancel
+            {uploading ? 'Uploading...' : 'Cancel'}
           </button>
           <button
             onClick={handleUpload}
@@ -271,14 +287,14 @@ export default function UploadModal({ onClose, onUpload }) {
             {uploading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                Uploading {selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''}...
+                Uploading to S3...
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-                Upload {selectedFiles.length} File{selectedFiles.length !== 1 ? 's' : ''} to Gallery
+                Upload {selectedFiles.length} File{selectedFiles.length !== 1 ? 's' : ''} to AWS
               </span>
             )}
           </button>
@@ -286,11 +302,21 @@ export default function UploadModal({ onClose, onUpload }) {
 
         {/* Success Messages */}
         <div className="file-selected-indicator fixed top-20 right-6 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none z-50">
-          Files selected successfully!
+          Files selected for S3 upload!
         </div>
         
         <div className="drop-success fixed top-20 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none z-50">
-          Files dropped successfully!
+          Files ready for AWS upload!
+        </div>
+
+        {/* AWS Info */}
+        <div className="mt-6 text-center border-t border-gold/20 pt-6">
+          <p className="text-gray-500 text-sm mb-2">
+            Files will be uploaded to: <span className="text-gold font-mono">mygenerateddatabucket</span>
+          </p>
+          <p className="text-gray-500 text-xs">
+            Stored permanently on AWS S3 • Region: eu-north-1
+          </p>
         </div>
 
         {/* Decorative Elements */}

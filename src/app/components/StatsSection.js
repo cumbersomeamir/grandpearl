@@ -134,7 +134,7 @@ export default function StatsSection() {
     },
     {
       icon: '🛏️',
-      number: 45,
+      number: 12,
       suffix: '',
       label: 'Luxury Rooms',
       description: 'Premium accommodations & executive suites'
