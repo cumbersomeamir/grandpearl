@@ -165,9 +165,9 @@ export default function Home() {
       {/* Main Content */}
       <main className="main-content relative z-10">
         <HeroSection />
-        <StatsSection />
+        {/* <StatsSection /> */}
         <ServicesShowcase />
-        <LuxuryFeatures />
+        {/* <LuxuryFeatures /> */}
         <TestimonialsCarousel />
         <LocationSection />
         <OffersSection />
