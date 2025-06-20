@@ -12,6 +12,7 @@ import LuxuryFeatures from '../app/components/LuxuryFeatures'
 import TestimonialsCarousel from '../app/components/TestimonialsCarousel'
 import LocationSection from '../app/components/LocationSection'
 import BookingCTA from '../app/components/BookingCta'
+import OffersSection from '../app/components/OffersSection'
 import ParallaxBackground from './components/animations/ParallaxBackground'
 import WhatsappButton from '../app/components/WhatsappButton'
 
@@ -169,6 +170,7 @@ export default function Home() {
         <LuxuryFeatures />
         <TestimonialsCarousel />
         <LocationSection />
+        <OffersSection />
         <BookingCTA />
       </main>
       <WhatsappButton />
