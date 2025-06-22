@@ -75,6 +75,21 @@ export default function GalleryPage() {
     const loginStatus = localStorage.getItem('grandpearl_logged_in')
     setIsLoggedIn(loginStatus === 'true')
 
+    // Load items from database
+    const fetchItems = async () => {
+      try {
+        const res = await fetch('/api/gallery')
+        if (res.ok) {
+          const data = await res.json()
+          const formatted = data.map(item => ({ ...item, id: item._id }))
+          setGalleryItems(prev => [...formatted, ...prev])
+        }
+      } catch (err) {
+        console.error('Failed to fetch gallery items', err)
+      }
+    }
+    fetchItems()
+
     // Initialize GSAP animations
     const ctx = gsap.context(() => {
       // Page entrance animation
@@ -139,18 +154,38 @@ export default function GalleryPage() {
     setShowUploadModal(false)
   }
 
-  const handleUpload = (files) => {
-    const newItems = files.map((file, index) => ({
-      id: Date.now() + index,
-      type: file.type.startsWith('video/') ? 'video' : 'image',
-      src: URL.createObjectURL(file),
-      title: file.name.split('.')[0],
-      category: 'uploaded',
-      description: `Uploaded ${file.type.startsWith('video/') ? 'video' : 'image'}`
-    }))
+  const handleUpload = async (files) => {
+    const readFiles = files.map((file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          resolve({
+            type: file.type.startsWith('video/') ? 'video' : 'image',
+            src: reader.result,
+            title: file.name.split('.')[0],
+            category: 'uploaded',
+            description: `Uploaded ${file.type.startsWith('video/') ? 'video' : 'image'}`
+          })
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    })
+
+    const newItems = await Promise.all(readFiles)
 
     setGalleryItems(prev => [...newItems, ...prev])
     setShowUploadModal(false)
+
+    try {
+      await fetch('/api/gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: newItems })
+      })
+    } catch (err) {
+      console.error('Failed to upload to server', err)
+    }
 
     // Upload success animation
     gsap.fromTo('.upload-success', {
