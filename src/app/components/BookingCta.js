@@ -159,9 +159,21 @@ export default function BookingCTA() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
+    // basic validations
+    const emailRegex = /^\S+@\S+\.\S+$/
+    if (!emailRegex.test(formData.email)) {
+      alert('Please enter a valid email address')
+      return
+    }
+    const phoneRegex = /^\d{10}$/
+    if (!phoneRegex.test(formData.phone)) {
+      alert('Please enter a valid 10 digit phone number')
+      return
+    }
+
     // Form submission animation
     gsap.to('.submit-btn', {
       scale: 0.95,
@@ -171,15 +183,33 @@ export default function BookingCTA() {
       ease: 'power2.inOut'
     })
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      if (!res.ok) throw new Error('Failed to submit')
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        service: '',
+        checkIn: '',
+        checkOut: '',
+        guests: '',
+        message: ''
+      })
       gsap.to('.form-success', {
         opacity: 1,
         y: 0,
         duration: 0.5,
         ease: 'back.out(1.7)'
       })
-    }, 1000)
+    } catch (err) {
+      console.error(err)
+      alert('There was an error submitting the form')
+    }
   }
 
   return (
