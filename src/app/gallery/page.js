@@ -13,62 +13,63 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
 
+const DEFAULT_ITEMS = [
+  {
+    id: 1,
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop&crop=center',
+    title: 'Luxury Suite Interior',
+    category: 'rooms',
+    description: 'Opulent bedroom with premium amenities'
+  },
+  {
+    id: 2,
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=600&fit=crop&crop=center',
+    title: 'Grand Banquet Hall',
+    category: 'events',
+    description: 'Elegant venue for weddings and celebrations'
+  },
+  {
+    id: 3,
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop&crop=center',
+    title: 'Premium Restaurant',
+    category: 'dining',
+    description: 'Fine dining with world-class cuisine'
+  },
+  {
+    id: 4,
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop&crop=center',
+    title: 'Luxury Spa',
+    category: 'amenities',
+    description: 'Rejuvenating wellness treatments'
+  },
+  {
+    id: 5,
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=600&fit=crop&crop=center',
+    title: 'Rooftop Terrace',
+    category: 'amenities',
+    description: 'Panoramic city views and relaxation'
+  },
+  {
+    id: 6,
+    type: 'image',
+    src: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=600&fit=crop&crop=center',
+    title: 'Corporate Conference',
+    category: 'events',
+    description: 'Professional meeting facilities'
+  }
+]
+
 export default function GalleryPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState('all')
-  const [galleryItems, setGalleryItems] = useState([
-    // Default gallery items
-    {
-      id: 1,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop&crop=center',
-      title: 'Luxury Suite Interior',
-      category: 'rooms',
-      description: 'Opulent bedroom with premium amenities'
-    },
-    {
-      id: 2,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=600&fit=crop&crop=center',
-      title: 'Grand Banquet Hall',
-      category: 'events',
-      description: 'Elegant venue for weddings and celebrations'
-    },
-    {
-      id: 3,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop&crop=center',
-      title: 'Premium Restaurant',
-      category: 'dining',
-      description: 'Fine dining with world-class cuisine'
-    },
-    {
-      id: 4,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop&crop=center',
-      title: 'Luxury Spa',
-      category: 'amenities',
-      description: 'Rejuvenating wellness treatments'
-    },
-    {
-      id: 5,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=600&fit=crop&crop=center',
-      title: 'Rooftop Terrace',
-      category: 'amenities',
-      description: 'Panoramic city views and relaxation'
-    },
-    {
-      id: 6,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=600&fit=crop&crop=center',
-      title: 'Corporate Conference',
-      category: 'events',
-      description: 'Professional meeting facilities'
-    }
-  ])
+  const [galleryItems, setGalleryItems] = useState(DEFAULT_ITEMS)
 
   useEffect(() => {
     // Check if user is logged in (from localStorage)
@@ -102,6 +103,18 @@ export default function GalleryPage() {
     })
 
     return () => ctx.revert()
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/gallery')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map(item => ({ ...item, id: item._id }))
+          setGalleryItems(prev => [...mapped, ...prev])
+        }
+      })
+      .catch(err => console.error(err))
   }, [])
 
   const handleLogin = (credentials) => {
@@ -139,29 +152,48 @@ export default function GalleryPage() {
     setShowUploadModal(false)
   }
 
-  const handleUpload = (files) => {
-    const newItems = files.map((file, index) => ({
-      id: Date.now() + index,
-      type: file.type.startsWith('video/') ? 'video' : 'image',
-      src: URL.createObjectURL(file),
-      title: file.name.split('.')[0],
-      category: 'uploaded',
-      description: `Uploaded ${file.type.startsWith('video/') ? 'video' : 'image'}`
-    }))
+  const handleUpload = async (files) => {
+    const readFiles = await Promise.all(
+      files.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onloadend = () => {
+              resolve({
+                type: file.type.startsWith('video/') ? 'video' : 'image',
+                src: reader.result,
+                title: file.name.split('.')[0],
+                category: 'uploaded',
+                description: `Uploaded ${file.type.startsWith('video/') ? 'video' : 'image'}`
+              })
+            }
+            reader.onerror = reject
+            reader.readAsDataURL(file)
+          })
+      )
+    )
 
-    setGalleryItems(prev => [...newItems, ...prev])
+    const saved = await Promise.all(
+      readFiles.map(async (item) => {
+        const res = await fetch('/api/gallery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item)
+        })
+        const data = await res.json()
+        return { ...data, id: data._id }
+      })
+    )
+
+    setGalleryItems((prev) => [...saved, ...prev])
     setShowUploadModal(false)
 
     // Upload success animation
-    gsap.fromTo('.upload-success', {
-      scale: 0,
-      opacity: 0
-    }, {
-      scale: 1,
-      opacity: 1,
-      duration: 0.5,
-      ease: 'back.out(1.7)'
-    })
+    gsap.fromTo(
+      '.upload-success',
+      { scale: 0, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
+    )
   }
 
   const filteredItems = selectedFilter === 'all' 
