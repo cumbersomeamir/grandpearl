@@ -25,3 +25,52 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Custom Colors */
+.text-gold {
+  color: #d3af37;
+}
+
+.text-antique-gold {
+  color: #b8860b;
+}
+
+.bg-gold {
+  background-color: #d3af37;
+}
+
+.bg-antique-gold {
+  background-color: #b8860b;
+}
+
+.from-gold {
+  --tw-gradient-from: #d3af37;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(211, 175, 55, 0));
+}
+
+.to-antique-gold {
+  --tw-gradient-to: #b8860b;
+}
+
+.border-gold {
+  border-color: #d3af37;
+}
+
+/* Font Family */
+.font-cormorant {
+  font-family: 'Cormorant Garamond', serif;
+}
