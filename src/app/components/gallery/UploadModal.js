@@ -7,6 +7,7 @@ export default function UploadModal({ onClose, onUpload }) {
   const modalRef = useRef(null)
   const [dragActive, setDragActive] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState([])
+  const [fileMetadata, setFileMetadata] = useState([])
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
@@ -76,6 +77,14 @@ export default function UploadModal({ onClose, onUpload }) {
     if (files.length > 0) {
       setSelectedFiles(prev => [...prev, ...files])
       
+      // Initialize metadata for new files
+      const newMetadata = files.map(file => ({
+        title: file.name.split('.')[0],
+        description: '',
+        category: 'uploaded'
+      }))
+      setFileMetadata(prev => [...prev, ...newMetadata])
+      
       // Show drop success animation
       gsap.fromTo('.drop-success', {
         scale: 0,
@@ -104,6 +113,14 @@ export default function UploadModal({ onClose, onUpload }) {
     if (files.length > 0) {
       setSelectedFiles(prev => [...prev, ...files])
       
+      // Initialize metadata for new files
+      const newMetadata = files.map(file => ({
+        title: file.name.split('.')[0],
+        description: '',
+        category: 'uploaded'
+      }))
+      setFileMetadata(prev => [...prev, ...newMetadata])
+      
       // Show selection animation
       gsap.fromTo('.file-selected-indicator', {
         scale: 0,
@@ -119,17 +136,45 @@ export default function UploadModal({ onClose, onUpload }) {
 
   const removeFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+    setFileMetadata(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const updateMetadata = (index, field, value) => {
+    setFileMetadata(prev => prev.map((meta, i) => 
+      i === index ? { ...meta, [field]: value } : meta
+    ))
   }
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return
     
+    // Validate required fields
+    const hasEmptyTitles = fileMetadata.some(meta => !meta.title || meta.title.trim() === '')
+    if (hasEmptyTitles) {
+      // Show validation error
+      gsap.fromTo('.validation-error', {
+        scale: 0,
+        opacity: 0
+      }, {
+        scale: 1,
+        opacity: 1,
+        duration: 0.5,
+        ease: 'back.out(1.7)'
+      })
+      
+      setTimeout(() => {
+        gsap.to('.validation-error', {
+          opacity: 0,
+          duration: 0.3
+        })
+      }, 3000)
+      return
+    }
+    
     setUploading(true)
     
-    // Simulate upload delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    onUpload(selectedFiles)
+    // Pass files and metadata to parent component
+    onUpload(selectedFiles, fileMetadata)
     setUploading(false)
   }
 
@@ -151,6 +196,13 @@ export default function UploadModal({ onClose, onUpload }) {
 
       {/* Modal Content */}
       <div className="upload-modal-content relative bg-gradient-to-br from-charcoal to-midnight rounded-3xl border-2 border-gold/30 shadow-2xl shadow-gold/10 p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        {/* Loader Overlay */}
+        {uploading && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-3xl">
+            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mb-6"></div>
+            <div className="text-gold text-xl font-bold font-cormorant">Uploading... Please wait</div>
+          </div>
+        )}
         {/* Close Button */}
         <button
           onClick={handleClose}
@@ -225,30 +277,80 @@ export default function UploadModal({ onClose, onUpload }) {
             <h3 className="text-lg font-bold text-white font-cormorant mb-4">
               Selected Files ({selectedFiles.length})
             </h3>
-            <div className="space-y-3 max-h-60 overflow-y-auto">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {selectedFiles.map((file, index) => (
-                <div key={index} className="flex items-center justify-between bg-midnight/50 rounded-xl p-4 border border-gold/20">
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl">
-                      {file.type.startsWith('video/') ? '🎥' : '📷'}
+                <div key={index} className="bg-midnight/50 rounded-xl p-4 border border-gold/20">
+                  {/* File Info */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="text-2xl">
+                        {file.type.startsWith('video/') ? '🎥' : '📷'}
+                      </div>
+                      <div>
+                        <div className="text-white font-semibold truncate max-w-xs">
+                          {file.name}
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                          {formatFileSize(file.size)}
+                        </div>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-red-400 hover:text-red-300 transition-colors duration-300"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Metadata Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-white font-semibold truncate max-w-xs">
-                        {file.name}
-                      </div>
-                      <div className="text-gray-400 text-sm">
-                        {formatFileSize(file.size)}
-                      </div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Title *
+                      </label>
+                      <input
+                        type="text"
+                        value={fileMetadata[index]?.title || ''}
+                        onChange={(e) => updateMetadata(index, 'title', e.target.value)}
+                        className="w-full px-4 py-2 bg-charcoal border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:border-gold focus:outline-none transition-colors"
+                        placeholder="Enter title..."
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Category
+                      </label>
+                      <select
+                        value={fileMetadata[index]?.category || 'uploaded'}
+                        onChange={(e) => updateMetadata(index, 'category', e.target.value)}
+                        className="w-full px-4 py-2 bg-charcoal border border-gold/30 rounded-lg text-white focus:border-gold focus:outline-none transition-colors"
+                      >
+                        <option value="uploaded">Uploaded</option>
+                        <option value="rooms">Rooms</option>
+                        <option value="events">Events</option>
+                        <option value="dining">Dining</option>
+                        <option value="amenities">Amenities</option>
+                      </select>
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeFile(index)}
-                    className="text-red-400 hover:text-red-300 transition-colors duration-300"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      value={fileMetadata[index]?.description || ''}
+                      onChange={(e) => updateMetadata(index, 'description', e.target.value)}
+                      className="w-full px-4 py-2 bg-charcoal border border-gold/30 rounded-lg text-white placeholder-gray-400 focus:border-gold focus:outline-none transition-colors resize-none"
+                      placeholder="Enter description..."
+                      rows="2"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -291,6 +393,10 @@ export default function UploadModal({ onClose, onUpload }) {
         
         <div className="drop-success fixed top-20 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none z-50">
           Files dropped successfully!
+        </div>
+
+        <div className="validation-error fixed top-20 right-6 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none z-50">
+          Please fill in all required fields (titles)!
         </div>
 
         {/* Decorative Elements */}

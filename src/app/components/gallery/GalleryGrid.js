@@ -129,8 +129,8 @@ export default function GalleryGrid({ items, isAdmin, onDeleteItem }) {
       <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {items.map((item, index) => (
           <div
-            key={item.id}
-            className={`gallery-item gallery-item-${item.id} group relative bg-gradient-to-br from-charcoal to-midnight rounded-3xl overflow-hidden border-2 border-gold/20 hover:border-gold/50 transition-all duration-300 cursor-pointer shadow-2xl shadow-black/50`}
+            key={item._id}
+            className={`gallery-item gallery-item-${item._id} group relative bg-gradient-to-br from-charcoal to-midnight rounded-3xl overflow-hidden border-2 border-gold/20 hover:border-gold/50 transition-all duration-300 cursor-pointer shadow-2xl shadow-black/50`}
             onClick={() => handleItemClick(item)}
           >
             {/* Media Content */}
@@ -198,7 +198,7 @@ export default function GalleryGrid({ items, isAdmin, onDeleteItem }) {
               {/* Admin delete button */}
               {isAdmin && (
                 <button
-                  onClick={(e) => handleDelete(item.id, e)}
+                  onClick={(e) => handleDelete(item._id, e)}
                   className="absolute top-4 right-16 bg-red-500/80 backdrop-blur-sm text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600 hover:scale-110"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
