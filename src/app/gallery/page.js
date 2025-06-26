@@ -18,62 +18,37 @@ export default function GalleryPage() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState('all')
-  const [galleryItems, setGalleryItems] = useState([
-    // Default gallery items
-    {
-      id: 1,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop&crop=center',
-      title: 'Luxury Suite Interior',
-      category: 'rooms',
-      description: 'Opulent bedroom with premium amenities'
-    },
-    {
-      id: 2,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=600&fit=crop&crop=center',
-      title: 'Grand Banquet Hall',
-      category: 'events',
-      description: 'Elegant venue for weddings and celebrations'
-    },
-    {
-      id: 3,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=600&fit=crop&crop=center',
-      title: 'Premium Restaurant',
-      category: 'dining',
-      description: 'Fine dining with world-class cuisine'
-    },
-    {
-      id: 4,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop&crop=center',
-      title: 'Luxury Spa',
-      category: 'amenities',
-      description: 'Rejuvenating wellness treatments'
-    },
-    {
-      id: 5,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&h=600&fit=crop&crop=center',
-      title: 'Rooftop Terrace',
-      category: 'amenities',
-      description: 'Panoramic city views and relaxation'
-    },
-    {
-      id: 6,
-      type: 'image',
-      src: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=600&fit=crop&crop=center',
-      title: 'Corporate Conference',
-      category: 'events',
-      description: 'Professional meeting facilities'
+  const [galleryItems, setGalleryItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Fetch gallery items from API
+  const fetchGalleryItems = async (category = 'all') => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/gallery${category !== 'all' ? `?category=${category}` : ''}`)
+      const result = await response.json()
+      
+      if (result.success) {
+        setGalleryItems(result.data)
+      } else {
+        setError('Failed to fetch gallery items')
+      }
+    } catch (err) {
+      console.error('Error fetching gallery items:', err)
+      setError('Failed to fetch gallery items')
+    } finally {
+      setLoading(false)
     }
-  ])
+  }
 
   useEffect(() => {
     // Check if user is logged in (from localStorage)
     const loginStatus = localStorage.getItem('grandpearl_logged_in')
     setIsLoggedIn(loginStatus === 'true')
+
+    // Fetch initial gallery items
+    fetchGalleryItems()
 
     // Initialize GSAP animations
     const ctx = gsap.context(() => {
@@ -103,6 +78,11 @@ export default function GalleryPage() {
 
     return () => ctx.revert()
   }, [])
+
+  // Refetch when filter changes
+  useEffect(() => {
+    fetchGalleryItems(selectedFilter)
+  }, [selectedFilter])
 
   const handleLogin = (credentials) => {
     // Simple login logic (in production, use proper authentication)
@@ -139,29 +119,119 @@ export default function GalleryPage() {
     setShowUploadModal(false)
   }
 
-  const handleUpload = (files) => {
-    const newItems = files.map((file, index) => ({
-      id: Date.now() + index,
-      type: file.type.startsWith('video/') ? 'video' : 'image',
-      src: URL.createObjectURL(file),
-      title: file.name.split('.')[0],
-      category: 'uploaded',
-      description: `Uploaded ${file.type.startsWith('video/') ? 'video' : 'image'}`
-    }))
+  const handleUpload = async (files, metadata = []) => {
+    try {
+      const formData = new FormData()
+      
+      files.forEach((file, index) => {
+        formData.append('files', file)
+        formData.append('titles', metadata[index]?.title || file.name.split('.')[0])
+        formData.append('descriptions', metadata[index]?.description || '')
+        formData.append('categories', metadata[index]?.category || 'uploaded')
+      })
 
-    setGalleryItems(prev => [...newItems, ...prev])
-    setShowUploadModal(false)
+      const response = await fetch('/api/gallery/upload', {
+        method: 'POST',
+        body: formData
+      })
 
-    // Upload success animation
-    gsap.fromTo('.upload-success', {
-      scale: 0,
-      opacity: 0
-    }, {
-      scale: 1,
-      opacity: 1,
-      duration: 0.5,
-      ease: 'back.out(1.7)'
-    })
+      const result = await response.json()
+
+      if (result.success) {
+        // Refetch gallery items to show the new uploads
+        await fetchGalleryItems(selectedFilter)
+        setShowUploadModal(false)
+
+        // Upload success animation
+        gsap.fromTo('.upload-success', {
+          scale: 0,
+          opacity: 0
+        }, {
+          scale: 1,
+          opacity: 1,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        })
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          gsap.to('.upload-success', {
+            opacity: 0,
+            duration: 0.3
+          })
+        }, 3000)
+      } else {
+        throw new Error(result.error || 'Upload failed')
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      // Show error animation
+      gsap.fromTo('.upload-error', {
+        scale: 0,
+        opacity: 0
+      }, {
+        scale: 1,
+        opacity: 1,
+        duration: 0.5,
+        ease: 'back.out(1.7)'
+      })
+
+      setTimeout(() => {
+        gsap.to('.upload-error', {
+          opacity: 0,
+          duration: 0.3
+        })
+      }, 3000)
+    }
+  }
+
+  const handleDeleteItem = async (id) => {
+    try {
+      const response = await fetch(`/api/gallery/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Refetch gallery items
+        await fetchGalleryItems(selectedFilter)
+      }
+    } catch (error) {
+      console.error('Delete error:', error)
+    }
+  }
+
+  const handleSeedDatabase = async () => {
+    try {
+      const response = await fetch('/api/gallery/seed', {
+        method: 'POST'
+      })
+      const result = await response.json()
+      
+      if (result.success) {
+        // Refetch gallery items
+        await fetchGalleryItems(selectedFilter)
+        
+        // Show success message
+        gsap.fromTo('.seed-success', {
+          scale: 0,
+          opacity: 0
+        }, {
+          scale: 1,
+          opacity: 1,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        })
+        
+        setTimeout(() => {
+          gsap.to('.seed-success', {
+            opacity: 0,
+            duration: 0.3
+          })
+        }, 3000)
+      }
+    } catch (error) {
+      console.error('Seed error:', error)
+    }
   }
 
   const filteredItems = selectedFilter === 'all' 
@@ -210,6 +280,13 @@ export default function GalleryPage() {
                         📸 Upload Photos & Videos
                       </span>
                       <div className="absolute inset-0 bg-gradient-to-r from-antique-gold via-gold to-antique-gold transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </button>
+                    
+                    <button
+                      onClick={handleSeedDatabase}
+                      className="px-6 py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-all duration-300"
+                    >
+                      🌱 Seed Database
                     </button>
                     
                     <button
@@ -275,14 +352,40 @@ export default function GalleryPage() {
             onFilterChange={setSelectedFilter}
           />
 
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gold mx-auto mb-4"></div>
+                <p className="text-gray-400 text-lg">Loading gallery items...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !loading && (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                <p className="text-red-400 text-lg mb-4">{error}</p>
+                <button
+                  onClick={() => fetchGalleryItems(selectedFilter)}
+                  className="px-6 py-3 bg-gold text-black font-semibold rounded-full hover:bg-antique-gold transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Gallery Grid */}
-          <GalleryGrid 
-            items={filteredItems}
-            isAdmin={isLoggedIn}
-            onDeleteItem={(id) => {
-              setGalleryItems(prev => prev.filter(item => item.id !== id))
-            }}
-          />
+          {!loading && !error && (
+            <GalleryGrid 
+              items={filteredItems}
+              isAdmin={isLoggedIn}
+              onDeleteItem={handleDeleteItem}
+            />
+          )}
         </div>
 
         {/* Success Messages */}
@@ -292,7 +395,12 @@ export default function GalleryPage() {
         <div className="upload-success fixed top-20 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none z-50">
           Media uploaded successfully!
         </div>
-        
+        <div className="upload-error fixed top-20 right-6 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none z-50">
+          Upload failed. Please try again.
+        </div>
+        <div className="seed-success fixed top-20 right-6 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none z-50">
+          Database seeded successfully!
+        </div>
 
       {/* Modals */}
       {showLoginModal && (

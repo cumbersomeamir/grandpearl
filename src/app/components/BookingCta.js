@@ -17,6 +17,7 @@ export default function BookingCTA() {
     guests: '',
     message: ''
   })
+  const [submitStatus, setSubmitStatus] = useState(null)
 
   const services = [
     'Luxury Room Booking',
@@ -159,10 +160,9 @@ export default function BookingCTA() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // Form submission animation
+    setSubmitStatus(null)
     gsap.to('.submit-btn', {
       scale: 0.95,
       duration: 0.1,
@@ -170,16 +170,39 @@ export default function BookingCTA() {
       repeat: 1,
       ease: 'power2.inOut'
     })
-
-    // Simulate form submission
-    setTimeout(() => {
-      gsap.to('.form-success', {
-        opacity: 1,
-        y: 0,
-        duration: 0.5,
-        ease: 'back.out(1.7)'
+    try {
+      const res = await fetch('/api/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       })
-    }, 1000)
+      const result = await res.json()
+      if (result.success) {
+        setSubmitStatus('success')
+        gsap.to('.form-success', {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        })
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          service: '',
+          checkIn: '',
+          checkOut: '',
+          guests: '',
+          message: ''
+        })
+      } else {
+        setSubmitStatus('error')
+        alert('There was an error submitting your booking. Please try again.')
+      }
+    } catch (error) {
+      setSubmitStatus('error')
+      alert('There was an error submitting your booking. Please try again.')
+    }
   }
 
   return (
@@ -427,7 +450,7 @@ export default function BookingCTA() {
                   </button>
 
                   {/* Form Success Message */}
-                  <div className="form-success opacity-0 translate-y-4 bg-green-500/20 border border-green-500 text-green-400 p-4 rounded-xl text-center">
+                  <div className={`form-success ${submitStatus === 'success' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} bg-green-500/20 border border-green-500 text-green-400 p-4 rounded-xl text-center transition-all duration-500`}>
                     <div className="font-semibold mb-2">🎉 Booking Request Submitted!</div>
                     <div className="text-sm">Our team will contact you within 2 hours to confirm your reservation.</div>
                   </div>
