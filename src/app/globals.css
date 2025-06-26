@@ -40,6 +40,24 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
+/* Shimmer Effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.bg-size-200 {
+  background-size: 200% 100%;
+}
+
 /* Custom Colors */
 .text-gold {
   color: #d3af37;
@@ -47,6 +65,10 @@ body {
 
 .text-antique-gold {
   color: #b8860b;
+}
+
+.text-pale-gold {
+  color: #f4e4bc;
 }
 
 .bg-gold {
@@ -73,4 +95,25 @@ body {
 /* Font Family */
 .font-cormorant {
   font-family: 'Cormorant Garamond', serif;
+}
+
+/* Additional utility classes */
+.border-3 {
+  border-width: 3px;
+}
+
+.shadow-gold\/30 {
+  box-shadow: 0 10px 15px -3px rgba(211, 175, 55, 0.3);
+}
+
+.shadow-gold\/40 {
+  box-shadow: 0 10px 15px -3px rgba(211, 175, 55, 0.4);
+}
+
+.shadow-gold\/50 {
+  box-shadow: 0 10px 15px -3px rgba(211, 175, 55, 0.5);
+}
+
+.shadow-antique-gold\/50 {
+  box-shadow: 0 10px 15px -3px rgba(184, 134, 11, 0.5);
 }
