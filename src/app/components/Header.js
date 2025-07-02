@@ -87,13 +87,11 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="header-logo group">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-gold to-antique-gold rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                <span className="text-black font-bold text-xl">GP</span>
-              </div>
-              <div className="hidden md:block">
+
+              {/* <div className="hidden md:block">
                 <h1 className="text-2xl font-bold text-gold font-cormorant">Grand Pearl</h1>
                 <p className="text-xs text-gray-400 tracking-widest">LUXURY HOTEL</p>
-              </div>
+              </div> */}
             </div>
           </Link>
 

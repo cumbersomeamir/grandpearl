@@ -167,38 +167,21 @@ export default function HeroSection() {
           </p>
         </div>
 
-        <div className="hero-cta-buttons flex flex-col sm:flex-row gap-8 justify-center items-center">
-          <button className="group relative px-12 py-6 bg-gradient-to-r from-gold via-antique-gold to-gold text-black text-xl font-bold rounded-full overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:shadow-gold/40 border-2 border-transparent hover:border-gold">
-            <span className="relative z-10 tracking-wide">Reserve Your Luxury Stay</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-antique-gold via-gold to-antique-gold transform translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          </button>
-          
-          <button className="group relative px-12 py-6 border-3 border-gold text-gold text-xl font-bold rounded-full overflow-hidden transition-all duration-500 hover:scale-110 hover:bg-gradient-to-r hover:from-gold hover:to-antique-gold hover:text-black hover:shadow-2xl hover:shadow-gold/40">
-            <span className="relative z-10 tracking-wide">Explore Our Venue</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-gold/10 to-antique-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          </button>
+
+
         </div>
 
-        {/* Premium scroll indicator */}
-        <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
-          <div className="w-8 h-12 border-3 border-gold rounded-full flex justify-center relative overflow-hidden">
-            <div className="w-2 h-4 bg-gradient-to-b from-gold to-antique-gold rounded-full mt-3 animate-bounce"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gold/20"></div>
-          </div>
-          <p className="text-gold text-sm mt-3 font-light tracking-widest">SCROLL TO EXPLORE</p>
-        </div>
-      </div>
+      
 
       {/* Luxury badges with metallic borders */}
-      <div className="absolute top-10 right-10 bg-gradient-to-r from-gold via-antique-gold to-gold text-black px-8 py-4 rounded-full font-bold text-lg shadow-2xl shadow-gold/30 border-2 border-gold">
+      {/* <div className="absolute top-10 right-10 bg-gradient-to-r from-gold via-antique-gold to-gold text-black px-8 py-4 rounded-full font-bold text-lg shadow-2xl shadow-gold/30 border-2 border-gold">
         <span className="flex items-center gap-2">
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
           Premium Luxury Hotel
         </span>
-      </div>
+      </div> */}
 
       <div className="absolute top-10 left-10 border-3 border-gold text-gold px-6 py-3 rounded-full text-lg font-light bg-black/50 backdrop-blur-sm">
         <span className="flex items-center gap-2">
